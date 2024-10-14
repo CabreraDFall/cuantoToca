@@ -2,35 +2,34 @@ import { useState, useEffect } from "react";
 import Add from "../utils/Add";
 import Modal from "../utils/Modal";
 
-function Accounts({ onTotalChange }) {
+function Accounts({ listPersonas, onUpdate }) {
+  const [bills, setBills] = useState(listPersonas);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [personas, setPersonas] = useState([]);
 
   const handleAddClick = () => {
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = (value) => {
-    // Agrega una nueva persona con el valor ingresado como negativo
-    const negativeValue = -Math.abs(parseFloat(value));
-    const newName = `Persona ${personas.length + 1}`;
-    const updatedPersonas = [
-      ...personas,
-      { name: newName, value: negativeValue.toFixed(2) },
-    ];
-    setPersonas(updatedPersonas);
+  const handleAddBill = (newBill) => {
+    // Create the new entry with "Persona" and the current index
+    const newEntry = {
+      name: `Persona ${bills.length + 1}`, // Add "Persona" followed by the next index
+      bill: newBill,
+    };
+
+    // Update local state with the new entry
+    setBills((prevBills) => {
+      const updatedBills = [...prevBills, newEntry];
+      // Notify the parent component of the updated bills
+      onUpdate(updatedBills);
+      return updatedBills; // Return the updated bills for local state
+    });
   };
 
-  // Calcular el total y comunicarlo al componente padre
   useEffect(() => {
-    const total = personas.reduce(
-      (acc, persona) => acc + parseFloat(persona.value),
-      0
-    );
-    if (onTotalChange) {
-      onTotalChange(total);
-    }
-  }, [personas, onTotalChange]);
+    // Sync the bills with the personas when the component mounts or the listPersonas prop changes
+    setBills(listPersonas);
+  }, [listPersonas]);
 
   return (
     <div className="">
@@ -40,16 +39,17 @@ function Accounts({ onTotalChange }) {
         </div>
         <Add onClick={handleAddClick} />
       </div>
-      {personas.map((persona, index) => (
+      {bills.map((bill, index) => (
         <div key={index} className="flex justify-between">
-          <div>{persona.name}</div>
-          <div>{persona.value}</div>
+          <div>{bill.name}</div>
+          <div>{bill.bill}</div>
         </div>
       ))}
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleModalSubmit}
+        onSubmit={handleAddBill}
       />
     </div>
   );

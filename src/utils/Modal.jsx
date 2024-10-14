@@ -6,7 +6,8 @@ function Modal({ isOpen, onClose, onSubmit }) {
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    onSubmit(value);
+    // Llamar a onSubmit con el valor convertido a número
+    onSubmit(parseFloat(value));
     setValue(""); // Resetea el valor después de enviarlo
     onClose(); // Cierra el modal
   };

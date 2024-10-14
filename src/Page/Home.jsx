@@ -5,19 +5,37 @@ import Payments from "../components/Payments";
 import Splits from "../components/Splits";
 
 function Home() {
-  const [total, setTotal] = useState(0);
-  const [remainder, setRemainder] = useState(0);
+  const [personas, setPersonas] = useState([]);
+  const [group, setGroup] = useState([]);
+  const [selectedParticipants, setSelectedParticipants] = useState([]); // Nuevo estado para participantes seleccionados
 
-  const handleTotalChange = (newTotal) => {
-    setTotal(newTotal);
-    // Recalculate remainder whenever total changes
-    setRemainder(newTotal); // Set remainder to the total initially
+  // Function to update personas based on new bills
+  const updatePersonas = (newBills) => {
+    setPersonas(newBills);
   };
 
-  const handleRemainderChange = (participantsSum) => {
-    // Calculate the remainder as total minus the sum of selected participants
-    setRemainder(total + participantsSum);
+  const updateGroup = (newGroup) => {
+    setGroup(newGroup);
   };
+
+  const calculateTotal = () => {
+    return personas.reduce((acc, persona) => acc + (persona.bill || 0), 0);
+  };
+
+  const calculateTotalChecked = (participants) => {
+    // Calcular el total solo de los participantes seleccionados
+    return participants.reduce((acc, participant) => {
+      return participant.checked ? acc + participant.amount : acc;
+    }, 0);
+  };
+
+  const handleCheckedChange = (participants) => {
+    // Actualiza el estado de los participantes seleccionados
+    setSelectedParticipants(participants);
+  };
+
+  const totalChecked = calculateTotalChecked(selectedParticipants); // Total de participantes seleccionados
+  const remaining = calculateTotal() - totalChecked; // Calcular el restante
 
   return (
     <div className="flex flex-col items-center">
@@ -27,22 +45,25 @@ function Home() {
         </div>
         <div className="flex gap-5">
           <div>
-            Total: <span>{total.toFixed(2)}</span>
+            Total: <span>{calculateTotal().toFixed(2)}</span>
           </div>
           <div>
-            Restante: <span>{remainder.toFixed(2)}</span>
+            Restante: <span>{remaining.toFixed(2)}</span>
           </div>
         </div>
       </div>
       <div className="flex flex-col gap-5">
         <div className="flex gap-5">
           <div className="w-96 h-96">
-            <Accounts onTotalChange={handleTotalChange} />
+            <Accounts listPersonas={personas} onUpdate={updatePersonas} />
           </div>
           <div className="w-96 h-96">
             <Participants
-              onRemainderChange={handleRemainderChange}
-              total={total}
+              group={group}
+              listPersonas={personas}
+              updateGroup={updateGroup}
+              total={calculateTotal()}
+              onCheckedChange={handleCheckedChange} // Pasar la función para manejar cambios de selección
             />
           </div>
         </div>
